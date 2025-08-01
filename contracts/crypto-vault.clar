@@ -69,3 +69,77 @@
     status: (string-ascii 20),
   }
 )
+
+;; User Loan Portfolio Mapping
+(define-map user-loans
+  { user: principal }
+  { active-loans: (list 10 uint) }
+)
+
+;; Oracle Price Feed Registry
+(define-map collateral-prices
+  { asset: (string-ascii 3) }
+  { price: uint }
+)
+
+;; FINANCIAL CALCULATION ENGINE
+
+;; Advanced Collateral Ratio Calculator
+(define-private (calculate-collateral-ratio
+    (collateral uint)
+    (loan uint)
+    (btc-price uint)
+  )
+  (let (
+      (collateral-value (* collateral btc-price))
+      (ratio (* (/ collateral-value loan) u100))
+    )
+    ratio
+  )
+)
+
+;; Dynamic Interest Accrual System
+(define-private (calculate-interest
+    (principal uint)
+    (rate uint)
+    (blocks uint)
+  )
+  (let (
+      (interest-per-block (/ (* principal rate) (* u100 u144))) ;; Daily interest normalized to block time
+      (total-interest (* interest-per-block blocks))
+    )
+    total-interest
+  )
+)
+
+;; Automated Liquidation Risk Assessment
+(define-private (check-liquidation (loan-id uint))
+  (let (
+      (loan (unwrap! (map-get? loans { loan-id: loan-id }) ERR-LOAN-NOT-FOUND))
+      (btc-price (unwrap! (get price (map-get? collateral-prices { asset: "BTC" }))
+        ERR-NOT-INITIALIZED
+      ))
+      (current-ratio (calculate-collateral-ratio (get collateral-amount loan)
+        (get loan-amount loan) btc-price
+      ))
+    )
+    (if (<= current-ratio (var-get liquidation-threshold))
+      (liquidate-position loan-id)
+      (ok true)
+    )
+  )
+)
+
+;; Liquidation Execution Engine
+(define-private (liquidate-position (loan-id uint))
+  (let (
+      (loan (unwrap! (map-get? loans { loan-id: loan-id }) ERR-LOAN-NOT-FOUND))
+      (borrower (get borrower loan))
+    )
+    (begin
+      (map-set loans { loan-id: loan-id } (merge loan { status: "liquidated" }))
+      (map-delete user-loans { user: borrower })
+      (ok true)
+    )
+  )
+)
