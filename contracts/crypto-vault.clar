@@ -293,3 +293,52 @@
     (ok true)
   )
 )
+
+;; Oracle Price Feed Management System
+(define-public (update-price-feed
+    (asset (string-ascii 3))
+    (new-price uint)
+  )
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    ;; Comprehensive validation pipeline
+    (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
+    (asserts! (is-valid-price new-price) ERR-INVALID-PRICE)
+    ;; Update price feed registry
+    (ok (map-set collateral-prices { asset: asset } { price: new-price }))
+  )
+)
+
+;; ANALYTICS & REPORTING INTERFACE
+
+;; Individual Loan Details Accessor
+(define-read-only (get-loan-details (loan-id uint))
+  (map-get? loans { loan-id: loan-id })
+)
+
+;; User Portfolio Overview
+(define-read-only (get-user-loans (user principal))
+  (map-get? user-loans { user: user })
+)
+
+;; Comprehensive Platform Analytics Dashboard
+(define-read-only (get-platform-stats)
+  {
+    total-btc-locked: (var-get total-btc-locked),
+    total-loans-issued: (var-get total-loans-issued),
+    minimum-collateral-ratio: (var-get minimum-collateral-ratio),
+    liquidation-threshold: (var-get liquidation-threshold),
+  }
+)
+
+;; Supported Assets Registry Query
+(define-read-only (get-valid-assets)
+  VALID-ASSETS
+)
+
+;; UTILITY FUNCTIONS
+
+;; Loan Portfolio Filter Helper
+(define-private (not-equal-loan-id (id uint))
+  (not (is-eq id id))
+)
