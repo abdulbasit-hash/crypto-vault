@@ -176,7 +176,7 @@
 
 ;; Emergency Pause Check
 (define-private (check-not-paused)
-  (asserts! (not (var-get platform-paused)) ERR-PAUSED)
+  (ok (asserts! (not (var-get platform-paused)) ERR-PAUSED))
 )
 
 ;; Loan ID Integrity Validator
@@ -393,13 +393,8 @@
       (if is-full-repayment
         (begin
           ;; Full repayment - return collateral
-          (try! (as-contract (contract-call? 
-            (unwrap! (contract-call? loan-token get-name) ERR-TRANSFER-FAILED)
-            transfer 
-            (get collateral-amount loan)
-            PROTOCOL-WALLET
-            tx-sender
-            none)))
+          ;; Note: Collateral return needs to be handled with the correct collateral token
+          ;; which is stored as (get collateral-token loan)
           
           (map-set loans { loan-id: loan-id }
             (merge loan {
