@@ -4,11 +4,13 @@ description = ''
 authors = []
 telemetry = true
 cache_dir = './.cache'
-requirements = []
+
+[[project.requirements]]
+contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
 [contracts.crypto-vault]
 path = 'contracts/crypto-vault.clar'
 clarity_version = 3
-epoch = 3.1
+epoch = '3.1'
 [repl.analysis]
 passes = ['check_checker']
 
